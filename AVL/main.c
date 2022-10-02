@@ -18,7 +18,6 @@ void percorrerPosOrdem(Nodo *);
 void percorrerPreOrdem(Nodo *);
 void percorrerInOrder(Nodo *);
 Nodo *verificarRemover(Nodo *, int);
-void verificarErro(int);
 Livro *criarLivro(int);
 Nodo *limpar(Nodo *);
 Nodo *verficarFilhos(Nodo *);
@@ -27,7 +26,6 @@ Nodo *verificarFilhos(Nodo *);
 Nodo *remover2Filhos(Nodo *, Nodo *);
 Nodo* removerTudo(Nodo*);
 int maior(int,int);
-Nodo * minValueNode( Nodo*);
 int getBalance(Nodo *n);
 Nodo *leftRotate(Nodo *);
 Nodo *rightRotate(Nodo  *);
@@ -51,30 +49,41 @@ int main() {
   inserir(root, 6);
   inserir(root, 11);
 
-  percorrerInOrder(root);
+  percorrerPreOrdem(root);
   printf("\n\n");
-  // root = verificarRemover(root, 12);
-  // root = verificarRemover(root, 7);
-  // root = verificarRemover(root, 11);
-  // root = verificarRemover(root, 2);
-  // root = verificarRemover(root, 5);
+  root = verificarRemover(root, 12);
+  root = verificarRemover(root, 7);
+  root = verificarRemover(root, 11);
+  root = verificarRemover(root, 44);
+  root = verificarRemover(root, 5);
 
   percorrerPreOrdem(root);
-  // root =  removerTudo(root);
-  // percorrerPreOrdem(root);
+  root =  removerTudo(root);
+  percorrerPreOrdem(root);
   return 0;
 }
+/// @brief verifica qual nodo tem maior altura
+/// @param a altura do nodo 1
+/// @param b altura do nodo 2
+/// @return retorna o que tiver maior altura 
 
-int maior(int a, int b)
-{
+int maior(int a, int b){
     return (a > b)? a : b;
 }
 
+/// @brief verifica a altura do nodo
+/// @param n nodo
+/// @return 0 se nodo for nulo, e a altura dele caso contrário
+
 int height(Nodo *n){
-    if (n == NULL)
+  if (n == NULL)
     return 0;
-    return n->height;
+  return n->height;
 }
+
+/// @brief faz rotacao a direita 
+/// @param y nodo a ser rotacionado
+/// @return retorna o nodo que vai ocupar a posicao de y
 
 Nodo *rightRotate(Nodo  *y) {
     Nodo *x = y->left;
@@ -92,6 +101,10 @@ Nodo *rightRotate(Nodo  *y) {
     return x;
 }
 
+/// @brief faz rotacao a esquerda 
+/// @param x nodo a ser rotacionado
+/// @return retorna o nodo que vai ocupar a posicao de x
+
 Nodo *leftRotate(Nodo *x){
     Nodo *y = x->right;
     Nodo *aux = y->left;
@@ -108,6 +121,10 @@ Nodo *leftRotate(Nodo *x){
     return y;
 }
 
+/// @brief calcula a diferenca de altura entre os nodos
+/// @param n nodo a ser verificado
+/// @return a diferenca de altura
+
 int getBalance(Nodo *n)
 {
     if (n == NULL)
@@ -115,16 +132,9 @@ int getBalance(Nodo *n)
     return height(n->left) - height(n->right);
 }
 
- Nodo * minValueNode( Nodo* node)
-{
-     Nodo* current = node;
- 
-    /* loop down to find the leftmost leaf */
-    while (current->left != NULL)
-        current = current->left;
- 
-    return current;
-}
+/// @brief cria e aloca memoria para o nodo
+/// @param codigo codigo do livro a ser criado
+/// @return retorna o nodo criado
 
 Nodo *criarNodo(int codigo) { // aloca memória para o nodo
   Nodo *nodo = (Nodo *)malloc(sizeof(Nodo));
@@ -135,12 +145,20 @@ Nodo *criarNodo(int codigo) { // aloca memória para o nodo
   return nodo;
 }
 
+/// @brief cria e aloca memória para o livro
+/// @param codigo codigo do livro que vai ser criado
+/// @return retorna o livro criado
+
 Livro *criarLivro(int codigo) { // aloca memória para o livro
   Livro *livro = (Livro *)malloc(sizeof(Livro));
   livro->codigo = codigo;
   return livro;
 }
 
+/// @brief insere o nodo na arvore
+/// @param nodo root da arvore
+/// @param codigo codigo do livro a ser criado e inserido
+/// @return retorna o nodo inserido
 Nodo *inserir(Nodo *nodo, int codigo) { // encontra a posição e insere o elemento
   if (nodo == NULL) {
     return criarNodo(codigo);
@@ -164,7 +182,42 @@ Nodo *inserir(Nodo *nodo, int codigo) { // encontra a posição e insere o eleme
     return nodo;
 }
 
+
+
+Nodo* verificarRemover(Nodo* root, int codigo){
+    // STEP 1: PERFORM STANDARD BST DELETE
+    if (root == NULL)
+        return root;
+    // If the key to be deleted is smaller than the
+    // root's key, then it lies in left subtree
+    if ( codigo < root->livro->codigo )
+        root->left = verificarRemover(root->left, codigo);
+ 
+    else if(codigo > root->livro->codigo )
+        root->right = verificarRemover(root->right, codigo);
+ 
+    // the node to be deleted
+    else {
+      root = verificarFilhos(root);
+    }
+ 
+    // If the tree had only one node then return
+    if (root == NULL)
+      return root;
+ 
+    // STEP 2: UPDATE HEIGHT OF THE CURRENT NODE
+    root->height = 1 + maior(height(root->left),height(root->right));
+ 
+    // STEP 3: GET THE BALANCE FACTOR OF THIS NODE (to
+    // check whether this node became unbalanced)
+    int balance = getBalance(root);
+    root = verificarRotacao(root, balance);
+ 
+    return root;
+}
+
 Nodo* verificarRotacao(Nodo* nodo, int balance){
+      // Left Left Case
    if (balance > 1 && getBalance(nodo->left) >= 0)
         return rightRotate(nodo);
  
@@ -185,6 +238,7 @@ Nodo* verificarRotacao(Nodo* nodo, int balance){
         nodo->right = rightRotate(nodo->right);
         return leftRotate(nodo);
     }
+    return nodo;
 }
 
 void percorrerPreOrdem(Nodo *nodo) {
@@ -219,27 +273,11 @@ Nodo *limpar(Nodo *n) {
   return n;
 }
 
-Nodo *verificarRemover(Nodo *nodo, int codigo) {
-  if (nodo == NULL) {
-    return NULL;
-  } else if (nodo->livro->codigo ==
-             codigo) { // verifica se o elemento atual é o que deve ser removido
-    nodo = verificarFilhos(nodo);
-  } else if (nodo->livro->codigo >
-             codigo) { // se não for o elemento a ser removido vai pra esquerda
-                       // ou pra direita
-    nodo->left = verificarRemover(nodo->left, codigo);
-  } else if (nodo->livro->codigo <= codigo) {
-    nodo->right = verificarRemover(nodo->right, codigo);
-  }
-  return nodo;
-}
-
 Nodo *verificarFilhos(Nodo *nodo) {
   Nodo *aux;
   if (nodo->right == NULL && nodo->left == NULL) { // verifica se tem filhos
     nodo = limpar(nodo);
-    return NULL;
+    return nodo;
   } else if (nodo->left != NULL && nodo->right != NULL) {
     aux = nodo->left;
     aux = remover2Filhos(nodo, aux);
@@ -281,12 +319,6 @@ Nodo *remover1Filho(Nodo *nodo, Nodo *aux) {
     nodo = limpar(nodo);
   }
   return aux;
-}
-
-void verificarErro(int erro) {
-  if (erro == -1) {
-    printf("Livro não existe\n");
-  }
 }
 
 Nodo* removerTudo(Nodo* root){
