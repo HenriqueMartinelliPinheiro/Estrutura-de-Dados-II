@@ -4,13 +4,9 @@
 typedef struct sNodo {
   struct sNodo *right;
   struct sNodo *left;
-  struct sLivro *livro;
+  int codigo;
   int height;
 } Nodo;
-
-typedef struct sLivro {
-  int codigo;
-} Livro;
 
 Nodo *criarNodo(int);
 Nodo *inserir(Nodo *, int);
@@ -18,7 +14,6 @@ void percorrerPosOrdem(Nodo *);
 void percorrerPreOrdem(Nodo *);
 void percorrerInOrder(Nodo *);
 Nodo *verificarRemover(Nodo *, int);
-Livro *criarLivro(int);
 Nodo *limpar(Nodo *);
 Nodo *verficarFilhos(Nodo *);
 Nodo *remover1Filho(Nodo *, Nodo *);
@@ -34,31 +29,31 @@ Nodo* verificarRotacao(Nodo*, int);
 
 int main() {
   Nodo *root = NULL;
-  root = inserir(root, 5);
-  inserir(root, 12);
-  inserir(root, 2);
-  inserir(root, 7);
-  inserir(root, 3);
-  inserir(root, 1);
-  inserir(root, 3);
-  inserir(root, 10);
-  inserir(root, 8);
-  inserir(root, 9);
-  inserir(root, 4);
-  inserir(root, 4);
-  inserir(root, 6);
-  inserir(root, 11);
-
-  percorrerPreOrdem(root);
-  printf("\n\n");
-  root = verificarRemover(root, 12);
-  root = verificarRemover(root, 7);
-  root = verificarRemover(root, 11);
+   root = inserir(root, 15);
+  root = inserir(root, 25);
+  root = inserir(root, 35);
+  root = inserir(root, 45);
+  root =inserir(root, 65);
+  root =inserir(root, 55);
+  root = inserir(root, 44);
+  root = inserir(root, 34);
+  root = inserir(root, 24);
+  root = inserir(root, 10);
+  root = inserir(root, 15);
+  root = verificarRemover(root, 25);
+  root = verificarRemover(root, 35);
+  root = verificarRemover(root, 15);
+  root = inserir(root, 42);
+  root = inserir(root, 40);
+  root = inserir(root, 43);
   root = verificarRemover(root, 44);
-  root = verificarRemover(root, 5);
+  root = inserir(root, 60);
+  root = inserir(root, 70);
+  root= inserir(root, 50);
+  root = inserir(root, 67);
+  root = inserir(root, 64);
+  root = verificarRemover(root, 65);
 
-  percorrerPreOrdem(root);
-  root =  removerTudo(root);
   percorrerPreOrdem(root);
   return 0;
 }
@@ -138,21 +133,11 @@ int getBalance(Nodo *n)
 
 Nodo *criarNodo(int codigo) { // aloca memória para o nodo
   Nodo *nodo = (Nodo *)malloc(sizeof(Nodo));
-  nodo->livro = criarLivro(codigo);
   nodo->left = NULL;
   nodo->right = NULL;
   nodo->height =1;
+  nodo->codigo = codigo;
   return nodo;
-}
-
-/// @brief cria e aloca memória para o livro
-/// @param codigo codigo do livro que vai ser criado
-/// @return retorna o livro criado
-
-Livro *criarLivro(int codigo) { // aloca memória para o livro
-  Livro *livro = (Livro *)malloc(sizeof(Livro));
-  livro->codigo = codigo;
-  return livro;
 }
 
 /// @brief insere o nodo na arvore
@@ -163,9 +148,9 @@ Nodo *inserir(Nodo *nodo, int codigo) { // encontra a posição e insere o eleme
   if (nodo == NULL) {
     return criarNodo(codigo);
   } else if(nodo!=NULL){
-    if (nodo->livro->codigo > codigo) {
+    if (nodo->codigo > codigo) {
       nodo->left = inserir(nodo->left, codigo);
-    } else if (nodo->livro->codigo <= codigo) {
+    } else if (nodo->codigo <= codigo) {
       nodo->right = inserir(nodo->right, codigo);
     }
   } else{
@@ -190,10 +175,10 @@ Nodo* verificarRemover(Nodo* root, int codigo){
         return root;
     // If the key to be deleted is smaller than the
     // root's key, then it lies in left subtree
-    if ( codigo < root->livro->codigo )
+    if ( codigo < root->codigo )
         root->left = verificarRemover(root->left, codigo);
  
-    else if(codigo > root->livro->codigo )
+    else if(codigo > root->codigo )
         root->right = verificarRemover(root->right, codigo);
  
     // the node to be deleted
@@ -243,7 +228,7 @@ Nodo* verificarRotacao(Nodo* nodo, int balance){
 
 void percorrerPreOrdem(Nodo *nodo) {
   if (nodo != NULL) {
-    printf("Valor: %i Height: %i \n ", nodo->livro->codigo, nodo->height);
+    printf("Valor: %i Height: %i \n ", nodo->codigo, nodo->height);
     percorrerPreOrdem(nodo->left);
     percorrerPreOrdem(nodo->right);
   }
@@ -253,21 +238,19 @@ void percorrerPosOrdem(Nodo *nodo) {
   if (nodo != NULL) {
     percorrerPosOrdem(nodo->left);
     percorrerPosOrdem(nodo->right);
-    printf("%i \n ", nodo->livro->codigo);
+    printf("%i \n ", nodo->codigo);
   }
 }
 
 void percorrerInOrder(Nodo *nodo) {
   if (nodo != NULL) {
     percorrerInOrder(nodo->left);
-    printf("%i \n ", nodo->livro->codigo);
+    printf("%i \n ", nodo->codigo);
     percorrerInOrder(nodo->right);
   }
 }
 
 Nodo *limpar(Nodo *n) {
-  free(n->livro);
-  n->livro = NULL;
   free(n);
   n = NULL;
   return n;
@@ -309,12 +292,10 @@ Nodo *remover2Filhos(Nodo *nodo, Nodo *aux) {
 }
 
 Nodo *remover1Filho(Nodo *nodo, Nodo *aux) {
-  if (nodo->right != NULL &&
-      nodo->left == NULL) { // verifica se tem filho apenas no right
+  if (nodo->right != NULL && nodo->left == NULL) { // verifica se tem filho apenas no right
     aux = nodo->right;
     nodo = limpar(nodo);
-  } else if (nodo->left != NULL &&
-             nodo->right == NULL) { // verifica se tem filho apenas no left
+  } else if (nodo->left != NULL &&  nodo->right == NULL) { // verifica se tem filho apenas no left
     aux = nodo->left;
     nodo = limpar(nodo);
   }
